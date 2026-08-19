@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up — Vyralix</title>
+  
+  <!-- Google Fonts: Chakra Petch & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Chakra Petch', 'sans-serif'],
+          },
+          colors: {
+            bg: '#0d1210',
+            card: '#141a17',
+            border: '#2a3330',
+            primary: '#e8e6e0',
+            muted: '#7a8580',
+            teal: '#4dd8c4',
+            gold: '#d4a24c',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#0d1210] text-[#e8e6e0] font-sans min-h-screen flex items-center justify-center p-4 antialiased selection:bg-[#4dd8c4] selection:text-[#0d1210]">
+
+  <!-- CENTERED CARD -->
+  <div class="bg-[#141a17] border border-[#2a3330] border-t-2 border-t-[#4dd8c4]/40 rounded-md p-8 sm:p-10 max-w-md mx-auto w-full space-y-6">
+    
+    <div class="text-center space-y-1">
+      <a href="index.html" class="font-heading font-bold text-3xl tracking-tight text-[#e8e6e0] inline-block">
+        Vyralix
+      </a>
+      <p class="text-xs text-[#7a8580]">
+        Create your creator account
+      </p>
+    </div>
+
+    <form class="space-y-4" onsubmit="event.preventDefault(); window.location.href='index.html';">
+      
+      <div class="space-y-1.5">
+        <label class="text-xs font-medium text-[#e8e6e0]">Username</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#7a8580]">
+            <i data-lucide="user" class="w-4 h-4" stroke-width="1.5"></i>
+          </div>
+          <input type="text" required placeholder="alex_art" 
+            class="w-full bg-[#0d1210] border border-[#2a3330] rounded-md pl-9 pr-3 py-2 text-xs text-[#e8e6e0] placeholder-[#7a8580] focus:outline-none focus:border-[#4dd8c4] transition-colors">
+        </div>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-xs font-medium text-[#e8e6e0]">Email Address</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#7a8580]">
+            <i data-lucide="mail" class="w-4 h-4" stroke-width="1.5"></i>
+          </div>
+          <input type="email" required placeholder="alex@vyralix.com" 
+            class="w-full bg-[#0d1210] border border-[#2a3330] rounded-md pl-9 pr-3 py-2 text-xs text-[#e8e6e0] placeholder-[#7a8580] focus:outline-none focus:border-[#4dd8c4] transition-colors">
+        </div>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-xs font-medium text-[#e8e6e0]">Password</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#7a8580]">
+            <i data-lucide="lock" class="w-4 h-4" stroke-width="1.5"></i>
+          </div>
+          <input type="password" required placeholder="••••••••••••" 
+            class="w-full bg-[#0d1210] border border-[#2a3330] rounded-md pl-9 pr-3 py-2 text-xs text-[#e8e6e0] placeholder-[#7a8580] focus:outline-none focus:border-[#4dd8c4] transition-colors">
+        </div>
+      </div>
+
+      <button type="submit" class="w-full bg-[#4dd8c4] text-[#0d1210] font-semibold text-xs py-2.5 rounded-md border-0 outline-none ring-0 hover:bg-[#3ec4b1] transition-colors shadow-[0_0_12px_rgba(77,216,196,0.3)] mt-2">
+        Create Account
+      </button>
+
+    </form>
+
+    <div class="text-center text-xs text-[#7a8580] pt-2 border-t border-[#2a3330]">
+      Already have an account? 
+      <a href="login.html" class="text-[#4dd8c4] font-medium hover:underline ml-1">Log in</a>
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+
+</body>
+</html>
