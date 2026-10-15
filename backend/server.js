@@ -7,6 +7,7 @@ require("dotenv").config();
 
 const postRoutes = require("./routes/postRoutes");
 const userRoutes = require("./routes/userRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
@@ -45,8 +46,12 @@ app.get("/", (req, res) => {
 // Exp 4 — posts
 app.use("/api/posts", postRoutes);
 
-// Exp 5 — users (register, login, profile)
-app.use("/api/users", userRoutes);
+// Exp 5 — users profile (kept for backward compatibility)
+// Exp 6 — auth (register + login with role)
+app.use("/api/auth", authRoutes);
+
+// Exp 6 — protected routes (dashboard + admin-only)
+app.use("/api/user", userRoutes);
 
 // ── START SERVER ──────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
