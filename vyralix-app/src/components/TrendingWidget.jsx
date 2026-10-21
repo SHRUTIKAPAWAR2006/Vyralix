@@ -1,14 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 
-// ============================================================================
-// EXPERIMENT 3: TrendingWidget Component
-// ----------------------------------------------------------------------------
-// 1. useContext(AppContext): Reads global posts array from context
-// 2. Dynamic Calculation: Finds the post with the highest likes count
-// 3. Automatic Updates: Re-evaluates instantly when likes change in Feed
-// ============================================================================
-
 export default function TrendingWidget() {
   // Consume posts array from AppContext
   const { posts } = useContext(AppContext);
