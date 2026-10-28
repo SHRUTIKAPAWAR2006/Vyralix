@@ -5,3 +5,7 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 .DS_Store
+
+# Environment & build output
+.env
+dist

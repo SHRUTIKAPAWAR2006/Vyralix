@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../context/UserContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { API_URL } from '../config';
 
 // ============================================================================
 // ISSUE 3: Protected Dashboard Component
@@ -36,7 +37,7 @@ export default function Dashboard({ onNavigate }) {
       }
 
       try {
-        const res = await fetch('http://localhost:5000/api/user/dashboard', {
+        const res = await fetch(`${API_URL}/api/user/dashboard`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -50,6 +51,14 @@ export default function Dashboard({ onNavigate }) {
             loading: false,
             verified: true,
             message: data.message || 'Token verified. Protected access granted.',
+          });
+        } else if (res.status === 401) {
+          // Token is expired or invalid: clear it so the app no longer shows a logged-in state
+          logoutUser();
+          setAuthStatus({
+            loading: false,
+            verified: false,
+            message: 'Session expired. Please log in again.',
           });
         } else {
           setAuthStatus({

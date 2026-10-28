@@ -1,11 +1,12 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 // ============================================================================
 // AppContext: Connects directly to the MongoDB backend (Exp 4-6)
 // ----------------------------------------------------------------------------
-// 1. fetchPosts(): GET http://localhost:5000/api/posts
-// 2. createPost(): POST http://localhost:5000/api/posts (saves new post to MongoDB)
-// 3. likePost() / unlikePost(): PUT http://localhost:5000/api/posts/:id
+// 1. fetchPosts(): GET ${API_URL}/api/posts
+// 2. createPost(): POST ${API_URL}/api/posts (saves new post to MongoDB)
+// 3. likePost() / unlikePost(): PUT ${API_URL}/api/posts/:id
 // ============================================================================
 
 export const AppContext = createContext();
@@ -19,11 +20,13 @@ export function AppProvider({ children }) {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/posts');
+      const res = await fetch(`${API_URL}/api/posts`);
       if (!res.ok) {
         throw new Error(`Failed to load posts (${res.status})`);
       }
       const data = await res.json();
+      // Newest posts first, so a freshly uploaded post stays at the top after refresh
+      data.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
       setPosts(data);
       setError(null);
     } catch (err) {
@@ -42,7 +45,7 @@ export function AppProvider({ children }) {
   // API Call 2: Create a new post and persist it to MongoDB
   const createPost = async (postData) => {
     try {
-      const res = await fetch('http://localhost:5000/api/posts', {
+      const res = await fetch(`${API_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,7 +84,7 @@ export function AppProvider({ children }) {
 
     try {
       // Sync with MongoDB backend using PUT /api/posts/:id
-      await fetch(`http://localhost:5000/api/posts/${post._id || post.id}`, {
+      await fetch(`${API_URL}/api/posts/${post._id || post.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ likes: newLikes }),
@@ -107,7 +110,7 @@ export function AppProvider({ children }) {
 
     try {
       // Sync with MongoDB backend using PUT /api/posts/:id
-      await fetch(`http://localhost:5000/api/posts/${post._id || post.id}`, {
+      await fetch(`${API_URL}/api/posts/${post._id || post.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ likes: newLikes }),

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 // ============================================================================
 // Real Functional Register Component with original Lucide icons (user, mail, lock, arrow-left)
@@ -23,8 +24,8 @@ export default function Register({ onNavigate, setSuccessMessage }) {
     setLoading(true);
 
     try {
-      // POST http://localhost:5000/api/auth/register
-      const res = await fetch('http://localhost:5000/api/auth/register', {
+      // POST ${API_URL}/api/auth/register
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

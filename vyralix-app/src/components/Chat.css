@@ -1,0 +1,133 @@
+/* ========================================================================== */
+/* EXPERIMENT 8: Chat Styles Scoped Strictly to .chat-container               */
+/* Protects the global Vyralix design system from any styling collisions.     */
+/* ========================================================================== */
+
+.chat-container {
+  max-width: 576px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #141a17;
+  border: 1px solid #2a3330;
+  border-top: 2px solid rgba(77, 216, 196, 0.6);
+  border-radius: 6px;
+  color: #e8e6e0;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.chat-container h2 {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e8e6e0;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.chat-container .status {
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+  color: #7a8580;
+}
+
+.chat-container .status-connected {
+  color: #4dd8c4;
+  font-weight: 600;
+}
+
+.chat-container .status-connecting {
+  color: #e05252;
+  font-weight: 600;
+}
+
+.chat-container .messages-box {
+  background-color: #0d1210;
+  border: 1px solid #2a3330;
+  border-radius: 6px;
+  height: 220px;
+  overflow-y: auto;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chat-container .no-messages {
+  color: #7a8580;
+  font-size: 0.8rem;
+  font-style: italic;
+  text-align: center;
+  margin: auto 0;
+}
+
+.chat-container .message-item {
+  font-size: 0.825rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.chat-container .message-user {
+  color: #4dd8c4;
+  font-weight: 600;
+}
+
+.chat-container .message-text {
+  color: #e8e6e0;
+}
+
+.chat-container .chat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chat-container .chat-input {
+  background-color: #0d1210;
+  border: 1px solid #2a3330;
+  border-radius: 6px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8rem;
+  color: #e8e6e0;
+  outline: none;
+  transition: border-color 0.15s ease;
+  font-family: inherit;
+}
+
+.chat-container .chat-input::placeholder {
+  color: #7a8580;
+}
+
+.chat-container .chat-input:focus {
+  border-color: #4dd8c4;
+}
+
+.chat-container .message-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-container .message-input {
+  flex: 1;
+}
+
+.chat-container .chat-send-btn {
+  background-color: #4dd8c4;
+  color: #0d1210;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.55rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 0 10px rgba(77, 216, 196, 0.25);
+  font-family: inherit;
+}
+
+.chat-container .chat-send-btn:hover {
+  background-color: #3ec4b1;
+  box-shadow: 0 0 14px rgba(77, 216, 196, 0.4);
+}

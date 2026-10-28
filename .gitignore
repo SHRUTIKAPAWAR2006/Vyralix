@@ -1,0 +1,6 @@
+# Dependencies and local-only experiment folders
+node_modules
+websocket-chat/
+
+# Environment files
+.env

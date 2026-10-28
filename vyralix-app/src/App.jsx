@@ -8,6 +8,7 @@ import CreatePost from './components/CreatePost';
 import Activity from './components/Activity';
 import Leaderboard from './components/Leaderboard';
 import Badges from './components/Badges';
+import Chat from './components/Chat';
 
 // ============================================================================
 // Vyralix Main App: Connected to Real MongoDB & Auth Backend
@@ -73,7 +74,10 @@ export default function App() {
 
       {/* Main View Router */}
       {currentView === 'home' && (
-        <Feed onNavigate={handleNavigation} />
+        <>
+          <Feed onNavigate={handleNavigation} />
+          <Chat />
+        </>
       )}
 
       {currentView === 'explore' && (

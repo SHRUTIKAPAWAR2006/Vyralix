@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - MONGO_URI=mongodb://host.docker.internal:27017/FullStackProject
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  frontend:
+    build: ./vyralix-app
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    restart: unless-stopped

@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { UserContext } from '../context/UserContext';
+import { API_URL } from '../config';
 
 // ============================================================================
 // Real Functional Login Component with original Lucide icons (mail, lock, arrow-left)
@@ -25,8 +26,8 @@ export default function Login({ onNavigate, successMessage }) {
     setLoading(true);
 
     try {
-      // POST http://localhost:5000/api/auth/login
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      // POST ${API_URL}/api/auth/login
+      const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

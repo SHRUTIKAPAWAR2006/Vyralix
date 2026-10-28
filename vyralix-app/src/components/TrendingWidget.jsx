@@ -14,7 +14,7 @@ export default function TrendingWidget() {
 
   // Find the post with the highest like count
   const topPost = posts && posts.length > 0 
-    ? posts.reduce((max, post) => (post.likes > max.likes ? post : max), posts[0])
+    ? posts.reduce((max, post) => ((post.likes || 0) > (max.likes || 0) ? post : max), posts[0])
     : null;
 
   if (!topPost) return null;
@@ -49,7 +49,7 @@ export default function TrendingWidget() {
       <div className="flex items-center gap-1.5 px-3 py-1 bg-[#0d1210] border border-[#2a3330] rounded-md">
         <i data-lucide="heart" className="w-3.5 h-3.5 fill-[#d4a24c] text-[#d4a24c]" strokeWidth="1.5"></i>
         <span className="font-mono text-xs font-semibold text-[#d4a24c]">
-          {topPost.likes.toLocaleString()}
+          {(topPost.likes || 0).toLocaleString()}
         </span>
       </div>
 
