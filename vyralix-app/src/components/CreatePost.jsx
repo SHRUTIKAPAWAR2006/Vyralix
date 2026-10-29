@@ -3,11 +3,11 @@ import { AppContext } from '../context/AppContext';
 import { UserContext } from '../context/UserContext';
 
 // ============================================================================
-// Create / Upload Post Component with Lucide icons & Back Navigation
+// Create / Upload Post Component with Direct Device File Upload
 // ============================================================================
 
 export default function CreatePost({ onNavigate }) {
-  const { createPost } = useContext(AppContext);
+  const { createPost, fetchPosts } = useContext(AppContext);
   const { user } = useContext(UserContext);
 
   useEffect(() => {
@@ -16,60 +16,55 @@ export default function CreatePost({ onNavigate }) {
     }
   });
 
-  const [creatorName, setCreatorName] = useState(user?.name || 'Alex Rivers');
+  const [creatorName, setCreatorName] = useState(user?.name || '');
   const [creatorHandle, setCreatorHandle] = useState(
-    user?.email ? `@${user.email.split('@')[0]}` : '@alex_rivers'
+    user?.name
+      ? `@${user.name.toLowerCase().replace(/\s+/g, '')}`
+      : user?.email
+      ? `@${user.email.split('@')[0]}`
+      : ''
   );
+  const [title, setTitle] = useState('');
   const [contentType, setContentType] = useState('3D Animation');
   const [caption, setCaption] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [file, setFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const samplePresets = [
-    {
-      label: 'Cyberpunk 3D Loop',
-      url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1000&q=80',
-      type: '3D Animation',
-    },
-    {
-      label: 'Sci-Fi Concept Art',
-      url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1000&q=80',
-      type: 'Digital Art',
-    },
-    {
-      label: 'Audio Synthesizer',
-      url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1000&q=80',
-      type: 'Music Clip',
-    },
-  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!imageUrl) {
-      setError('Please provide an image URL or choose a preset below.');
+    // Step 1 Validation: File must be chosen
+    if (!file) {
+      setError('Please choose a file to upload.');
       return;
     }
 
     setLoading(true);
 
-    const result = await createPost({
-      creatorName,
-      creatorHandle,
-      contentType,
-      caption,
-      imageUrl,
-      likes: 0,
-    });
+    // Step 2: Build FormData with file and metadata
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', title);
+    formData.append('caption', caption);
+    formData.append('contentType', contentType);
+    formData.append('creatorName', creatorName);
+    formData.append('creatorHandle', creatorHandle);
+
+    const result = await createPost(formData);
 
     setLoading(false);
 
     if (result.success) {
+      // Refresh feed and return to home
+      if (fetchPosts) {
+        await fetchPosts();
+      }
       onNavigate('home');
     } else {
-      setError(result.error || 'Failed to save post to MongoDB');
+      setError(result.error || 'Failed to upload post to backend.');
     }
   };
 
@@ -79,7 +74,7 @@ export default function CreatePost({ onNavigate }) {
       <div>
         <button
           onClick={() => onNavigate('home')}
-          className="text-xs text-[#4dd8c4] hover:underline inline-flex items-center gap-1.5 font-medium"
+          className="text-xs text-[#4dd8c4] hover:underline inline-flex items-center gap-1.5 font-medium cursor-pointer"
         >
           <i data-lucide="arrow-left" className="w-3.5 h-3.5" strokeWidth="1.5"></i>
           <span>Back to Home Feed</span>
@@ -97,13 +92,13 @@ export default function CreatePost({ onNavigate }) {
             <div>
               <h1 className="font-heading font-bold text-xl text-[#e8e6e0]">Upload New Creation</h1>
               <p className="text-xs text-[#7a8580] mt-0.5">
-                Publish your 3D animation, concept art, or music sample to MongoDB.
+                Share images, audio tracks, or videos directly from your device.
               </p>
             </div>
           </div>
           <button
             onClick={() => onNavigate('home')}
-            className="text-xs text-[#7a8580] hover:text-[#e8e6e0] flex items-center gap-1"
+            className="text-xs text-[#7a8580] hover:text-[#e8e6e0] flex items-center gap-1 cursor-pointer"
           >
             <span>Cancel</span>
           </button>
@@ -146,6 +141,19 @@ export default function CreatePost({ onNavigate }) {
             </div>
           </div>
 
+          {/* Title */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-[#e8e6e0]">Title</label>
+            <input
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Cyber City Skyline"
+              className="w-full bg-[#0d1210] border border-[#2a3330] rounded-md px-3 py-2 text-xs text-[#e8e6e0] placeholder-[#7a8580] focus:outline-none focus:border-[#4dd8c4]"
+            />
+          </div>
+
           {/* Content Type */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-[#e8e6e0]">Category / Content Type</label>
@@ -174,60 +182,77 @@ export default function CreatePost({ onNavigate }) {
             ></textarea>
           </div>
 
-          {/* Media URL */}
+          {/* File Upload from Device */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#e8e6e0]">Media Image URL</label>
+            <label className="text-xs font-medium text-[#e8e6e0]">
+              Upload Media from Device (Image, Audio, or Video)
+            </label>
             <input
-              type="url"
-              required
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://images.unsplash.com/..."
-              className="w-full bg-[#0d1210] border border-[#2a3330] rounded-md px-3 py-2 text-xs text-[#e8e6e0] placeholder-[#7a8580] focus:outline-none focus:border-[#4dd8c4]"
+              type="file"
+              accept="image/*,audio/*,video/*"
+              onChange={(e) => {
+                const selectedFile = e.target.files && e.target.files[0];
+                setFile(selectedFile || null);
+                if (selectedFile) {
+                  setPreviewUrl(URL.createObjectURL(selectedFile));
+                  // Auto-suggest category if not set
+                  if (selectedFile.type.startsWith('audio/')) {
+                    setContentType('Music Clip');
+                  } else if (selectedFile.type.startsWith('video/')) {
+                    setContentType('3D Animation');
+                  } else if (selectedFile.type.startsWith('image/')) {
+                    setContentType('Digital Art');
+                  }
+                } else {
+                  setPreviewUrl('');
+                }
+              }}
+              className="w-full bg-[#0d1210] border border-[#2a3330] rounded-md px-3 py-2 text-xs text-[#e8e6e0] file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#141a17] file:text-[#4dd8c4] hover:file:bg-[#1f2824] file:cursor-pointer transition-colors"
             />
+            {/* Show chosen file's name below the input */}
+            {file ? (
+              <p className="text-xs text-[#4dd8c4] flex items-center gap-1.5 mt-1 font-mono">
+                <i data-lucide="check" className="w-3.5 h-3.5"></i>
+                <span>Chosen file: <strong>{file.name}</strong> ({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+              </p>
+            ) : (
+              <p className="text-[11px] text-[#7a8580] mt-1">
+                Max file size: 50 MB (JPEG, PNG, GIF, WEBP, MP3, WAV, OGG, MP4, WEBM, MOV)
+              </p>
+            )}
           </div>
 
-          {/* Preset Buttons */}
-          <div className="space-y-2">
-            <span className="text-[11px] text-[#7a8580]">Or click a sample preset:</span>
-            <div className="flex flex-wrap gap-2">
-              {samplePresets.map((preset, idx) => (
-                <button
-                  type="button"
-                  key={idx}
-                  onClick={() => {
-                    setImageUrl(preset.url);
-                    setContentType(preset.type);
-                  }}
-                  className="px-2.5 py-1 text-[11px] bg-[#0d1210] border border-[#2a3330] hover:border-[#4dd8c4] text-[#e8e6e0] rounded transition-colors flex items-center gap-1"
-                >
-                  <i data-lucide="zap" className="w-3 h-3 text-[#d4a24c]" strokeWidth="1.5"></i>
-                  <span>{preset.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Image Preview */}
-          {imageUrl && (
-            <div className="mt-3 rounded-md overflow-hidden border border-[#2a3330] max-h-56 bg-[#0d1210]">
-              <img
-                src={imageUrl}
-                alt="Preview"
-                className="w-full h-56 object-cover"
-                onError={() => setError('Image failed to load from provided URL.')}
-              />
+          {/* Media Preview Box */}
+          {previewUrl && (
+            <div className="mt-3 rounded-md overflow-hidden border border-[#2a3330] bg-[#0d1210] p-2">
+              {file?.type?.startsWith('video/') ? (
+                <video src={previewUrl} controls className="w-full max-h-64 rounded object-contain bg-black" />
+              ) : file?.type?.startsWith('audio/') ? (
+                <div className="p-4 text-center space-y-2">
+                  <div className="text-xs text-[#4dd8c4] font-medium flex items-center justify-center gap-2">
+                    <i data-lucide="music" className="w-4 h-4" strokeWidth="1.5"></i>
+                    <span>Audio: {file.name}</span>
+                  </div>
+                  <audio src={previewUrl} controls className="w-full" />
+                </div>
+              ) : (
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-full max-h-56 object-cover rounded"
+                />
+              )}
             </div>
           )}
 
-          {/* Submit Button */}
+          {/* Post Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#4dd8c4] text-[#0d1210] font-semibold text-xs py-2.5 rounded-md hover:bg-[#3ec4b1] transition-colors shadow-[0_0_12px_rgba(77,216,196,0.3)] mt-2 disabled:opacity-50 flex items-center justify-center gap-1.5"
+            className="w-full bg-[#4dd8c4] text-[#0d1210] font-semibold text-xs py-2.5 rounded-md hover:bg-[#3ec4b1] transition-colors shadow-[0_0_12px_rgba(77,216,196,0.3)] mt-2 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
           >
             <i data-lucide="plus" className="w-4 h-4" strokeWidth="1.5"></i>
-            <span>{loading ? 'Saving to MongoDB...' : 'Publish to Feed'}</span>
+            <span>{loading ? 'Uploading...' : 'Post'}</span>
           </button>
         </form>
 

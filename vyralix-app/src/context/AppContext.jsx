@@ -42,15 +42,25 @@ export function AppProvider({ children }) {
     fetchPosts();
   }, []);
 
-  // API Call 2: Create a new post and persist it to MongoDB
+  // API Call 2: Create a new post (supports both FormData for file uploads and JSON)
   const createPost = async (postData) => {
     try {
+      const token = localStorage.getItem('vyralix_token') || localStorage.getItem('token');
+      const headers = {};
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const isFormData = typeof FormData !== 'undefined' && postData instanceof FormData;
+      if (!isFormData) {
+        headers['Content-Type'] = 'application/json';
+      }
+
       const res = await fetch(`${API_URL}/api/posts`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postData),
+        headers,
+        body: isFormData ? postData : JSON.stringify(postData),
       });
 
       if (!res.ok) {

@@ -4,6 +4,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
+const Post = require("../models/Post");
+const { protect } = require("../middleware/authMiddleware");
+const { calculateLevel } = require("../utils/level");
 
 // ── POST /api/auth/register ───────────────────────────────────────────────────
 // Creates a new user. Accepts name, email, password, and optional role.
@@ -78,6 +81,36 @@ router.post("/login", async (req, res) => {
         email: user.email,
         role: user.role,
       },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ── GET /api/auth/profile ─────────────────────────────────────────────────────
+router.get("/profile", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const realLevel = calculateLevel(user.xp || 0);
+    if (user.level !== realLevel) {
+      user.level = realLevel;
+      await user.save();
+    }
+
+    const postCount = await Post.countDocuments({ creatorName: user.name });
+
+    res.status(200).json({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      xp: user.xp || 0,
+      level: user.level || 1,
+      createdAt: user.createdAt,
+      postCount,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

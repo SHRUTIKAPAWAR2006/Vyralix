@@ -248,23 +248,44 @@ export default function Feed({ onNavigate, isExploreView = false }) {
                 </div>
               </div>
 
-              {/* Caption */}
+              {/* Title & Caption */}
+              {post.title && (
+                <h4 className="font-heading font-semibold text-base text-[#e8e6e0]">
+                  {post.title}
+                </h4>
+              )}
               <p className="text-sm text-[#e8e6e0] leading-relaxed">
                 {post.caption}
               </p>
 
-              {/* Media Content Preview */}
+              {/* Media Content Preview: Image, Video, or Audio */}
               {post.imageUrl && (
                 <div className="relative rounded-md overflow-hidden bg-[#0d1210] border border-[#2a3330]">
-                  <img 
-                    src={post.imageUrl} 
-                    alt="Content Preview" 
-                    className="w-full h-80 object-cover"
-                    onError={(e) => {
-                      e.target.src =
-                        'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1000&q=80';
-                    }}
-                  />
+                  {post.mediaType === 'video' || (typeof post.imageUrl === 'string' && post.imageUrl.match(/\.(mp4|webm|mov)(\?.*)?$/i)) ? (
+                    <video
+                      src={post.imageUrl}
+                      controls
+                      className="w-full max-h-96 object-contain bg-black"
+                    />
+                  ) : post.mediaType === 'audio' || (typeof post.imageUrl === 'string' && post.imageUrl.match(/\.(mp3|wav|ogg)(\?.*)?$/i)) ? (
+                    <div className="p-6 text-center space-y-3 bg-[#141a17]">
+                      <div className="flex items-center justify-center gap-2 text-xs text-[#4dd8c4] font-medium">
+                        <i data-lucide="music" className="w-4 h-4" strokeWidth="1.5"></i>
+                        <span>{post.contentType || 'Audio Clip'}</span>
+                      </div>
+                      <audio src={post.imageUrl} controls className="w-full" />
+                    </div>
+                  ) : (
+                    <img 
+                      src={post.imageUrl} 
+                      alt="Content Preview" 
+                      className="w-full h-80 object-cover"
+                      onError={(e) => {
+                        e.target.src =
+                          'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1000&q=80';
+                      }}
+                    />
+                  )}
                 </div>
               )}
 

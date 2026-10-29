@@ -64,8 +64,9 @@ app.use("/api/posts", postRoutes);
 // Exp 6 — auth (register + login with role)
 app.use("/api/auth", authRoutes);
 
-// Exp 6 — protected routes (dashboard + admin-only)
+// Exp 6 — protected routes (dashboard + admin-only + profile)
 app.use("/api/user", userRoutes);
+app.use("/api/users", userRoutes);
 
 // ── WEBSOCKET / SOCKET.IO SERVER (Exp 8) ──────────────────────────────────────
 const server = http.createServer(app);

@@ -2,18 +2,36 @@ import React, { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../context/UserContext';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { API_URL } from '../config';
+import { getLevelProgress } from '../utils/level';
 
 // ============================================================================
-// ISSUE 3: Protected Dashboard Component
-// Restores original Lucide icons (home, compass, upload, activity, trophy, award, user, etc.)
+// Real Profile / Dashboard Component: Connected to Backend & MongoDB
+// Displays real user profile, level, XP progression bar, and post count.
 // ============================================================================
 
 export default function Dashboard({ onNavigate }) {
   const { user, token, logoutUser } = useContext(UserContext);
+  const [profile, setProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [authStatus, setAuthStatus] = useState({ loading: true, verified: false, message: '' });
 
-  const displayName = user?.name || 'Alex Rivers';
-  const displayHandle = user?.email ? `@${user.email.split('@')[0]}` : '@alex_rivers';
+  // Redirect to login if user is not logged in
+  useEffect(() => {
+    if (!token && onNavigate) {
+      onNavigate('login');
+    }
+  }, [token, onNavigate]);
+
+  const displayName = profile?.name || user?.name || 'Creator';
+  const displayHandle = profile?.name
+    ? `@${profile.name.toLowerCase().replace(/\s+/g, '')}`
+    : user?.email
+    ? `@${user.email.split('@')[0]}`
+    : '@creator';
+
+  const currentLevel = profile?.level || 1;
+  const currentXP = profile?.xp || 0;
+  const xpProgress = getLevelProgress(currentXP);
 
   useDocumentTitle(`Vyralix - ${displayName}'s Dashboard`);
 
@@ -24,47 +42,44 @@ export default function Dashboard({ onNavigate }) {
     }
   });
 
-  // Verify JWT token against protected endpoint: GET /api/user/dashboard
+  // Fetch real profile data from backend: GET /api/user/profile
   useEffect(() => {
-    const verifyProtectedDashboard = async () => {
+    const fetchUserProfile = async () => {
       if (!token) {
-        setAuthStatus({
-          loading: false,
-          verified: false,
-          message: 'No token found in localStorage. Please log in.',
-        });
+        setLoadingProfile(false);
         return;
       }
 
       try {
-        const res = await fetch(`${API_URL}/api/user/dashboard`, {
+        setLoadingProfile(true);
+        const res = await fetch(`${API_URL}/api/user/profile`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        const data = await res.json();
-
         if (res.ok) {
+          const data = await res.json();
+          setProfile(data);
           setAuthStatus({
             loading: false,
             verified: true,
-            message: data.message || 'Token verified. Protected access granted.',
+            message: 'Token verified. Protected profile access granted.',
           });
         } else if (res.status === 401) {
-          // Token is expired or invalid: clear it so the app no longer shows a logged-in state
           logoutUser();
           setAuthStatus({
             loading: false,
             verified: false,
             message: 'Session expired. Please log in again.',
           });
+          if (onNavigate) onNavigate('login');
         } else {
           setAuthStatus({
             loading: false,
             verified: false,
-            message: data.message || 'Authentication rejected by backend.',
+            message: 'Failed to load profile data from backend.',
           });
         }
       } catch (err) {
@@ -73,10 +88,12 @@ export default function Dashboard({ onNavigate }) {
           verified: false,
           message: 'Error connecting to backend auth middleware.',
         });
+      } finally {
+        setLoadingProfile(false);
       }
     };
 
-    verifyProtectedDashboard();
+    fetchUserProfile();
   }, [token]);
 
   // Handle Logout
@@ -210,65 +227,86 @@ export default function Dashboard({ onNavigate }) {
 
           {/* PROFILE HEADER CARD */}
           <div className="bg-[#141a17] border border-[#2a3330] border-t-2 border-t-[#4dd8c4]/40 rounded-md p-6 space-y-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
-                  alt={displayName}
-                  className="w-16 h-16 rounded-full object-cover border border-[#2a3330]"
-                />
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h1 className="font-heading font-semibold text-lg text-[#e8e6e0]">{displayName}</h1>
-                    <span className="text-xs text-[#d4a24c] font-medium border-b border-[#d4a24c]/40 pb-0.5 ml-1">
-                      LVL 35
+            {loadingProfile ? (
+              <div className="text-center py-6 text-xs text-[#7a8580] animate-pulse">
+                Loading profile data from backend...
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        displayName
+                      )}&background=0d1210&color=4dd8c4&bold=true`}
+                      alt={displayName}
+                      className="w-16 h-16 rounded-full object-cover border border-[#2a3330]"
+                    />
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h1 className="font-heading font-semibold text-lg text-[#e8e6e0]">
+                          {displayName}
+                        </h1>
+                        <span className="text-xs text-[#d4a24c] font-medium border-b border-[#d4a24c]/40 pb-0.5 ml-1">
+                          LVL {currentLevel}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#7a8580]">{displayHandle}</p>
+                      {(profile?.email || user?.email) && (
+                        <p className="text-[11px] text-[#7a8580]/70">
+                          {profile?.email || user?.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleLogout}
+                    className="px-3.5 py-1.5 bg-[#0d1210] border border-red-500/30 hover:border-red-500 text-xs font-medium text-red-400 rounded-md transition-colors flex items-center gap-1.5"
+                  >
+                    <i data-lucide="log-out" className="w-3.5 h-3.5" strokeWidth="1.5"></i>
+                    <span>Log Out</span>
+                  </button>
+                </div>
+
+                {/* XP PROGRESS BAR */}
+                <div className="space-y-1.5 pt-4 border-t border-[#2a3330]">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-[#e8e6e0] font-medium">
+                      Level {currentLevel} Progress
+                    </span>
+                    <span className="text-[#d4a24c] font-mono font-medium">
+                      {xpProgress.currentXP} / {xpProgress.nextLevelXP} XP ({xpProgress.percentage}%)
                     </span>
                   </div>
-                  <p className="text-xs text-[#7a8580]">{displayHandle}</p>
-                  {user?.email && (
-                    <p className="text-[11px] text-[#7a8580]/70">{user.email}</p>
-                  )}
+                  <div className="w-full h-2 bg-[#2a3330] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#d4a24c] rounded-full transition-all duration-300"
+                      style={{ width: `${xpProgress.percentage}%` }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-
-              <button
-                onClick={handleLogout}
-                className="px-3.5 py-1.5 bg-[#0d1210] border border-red-500/30 hover:border-red-500 text-xs font-medium text-red-400 rounded-md transition-colors flex items-center gap-1.5"
-              >
-                <i data-lucide="log-out" className="w-3.5 h-3.5" strokeWidth="1.5"></i>
-                <span>Log Out</span>
-              </button>
-            </div>
-
-            {/* XP PROGRESS BAR */}
-            <div className="space-y-1.5 pt-4 border-t border-[#2a3330]">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-[#e8e6e0] font-medium">Level 35 Progress</span>
-                <span className="text-[#d4a24c] font-mono font-medium">2,450 / 3,000 XP (82%)</span>
-              </div>
-              <div className="w-full h-2 bg-[#2a3330] rounded-full overflow-hidden">
-                <div className="h-full bg-[#d4a24c] rounded-full" style={{ width: '82%' }}></div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
 
           {/* STATS ROW */}
           <div className="grid grid-cols-3 gap-6 py-4 border-y border-[#2a3330] text-center sm:text-left">
             <div className="space-y-1">
-              <span className="text-xs text-[#7a8580] font-medium uppercase tracking-wider">Role</span>
+              <span className="text-xs text-[#7a8580] font-medium uppercase tracking-wider">Posts</span>
               <div className="font-heading font-semibold text-xl text-[#4dd8c4]">
-                {user?.role ? user.role.toUpperCase() : 'USER'}
+                {profile?.postCount ?? 0}
               </div>
             </div>
 
             <div className="space-y-1">
               <span className="text-xs text-[#7a8580] font-medium uppercase tracking-wider">Followers</span>
-              <div className="font-heading font-semibold text-xl text-[#e8e6e0]">12.4k</div>
+              <div className="font-heading font-semibold text-xl text-[#e8e6e0]">0</div>
             </div>
 
             <div className="space-y-1">
               <span className="text-xs text-[#7a8580] font-medium uppercase tracking-wider">Following</span>
-              <div className="font-heading font-semibold text-xl text-[#e8e6e0]">342</div>
+              <div className="font-heading font-semibold text-xl text-[#e8e6e0]">0</div>
             </div>
           </div>
 

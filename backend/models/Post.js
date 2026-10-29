@@ -14,12 +14,21 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    title: {
+      type: String,
+      default: ""
+    },
     caption: {
       type: String
     },
     imageUrl: {
       type: String,
       required: true
+    },
+    mediaType: {
+      type: String,
+      enum: ["image", "audio", "video"],
+      default: "image"
     },
     likes: {
       type: Number,

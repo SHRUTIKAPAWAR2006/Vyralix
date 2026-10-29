@@ -2,6 +2,42 @@ const express = require("express");
 const router = express.Router();
 
 const { protect, authorize } = require("../middleware/authMiddleware");
+const User = require("../models/User");
+const Post = require("../models/Post");
+const { calculateLevel } = require("../utils/level");
+
+// ── GET /api/user/profile ─────────────────────────────────────────────────────
+// Protected route — returns real logged-in user profile, XP, level, and post count.
+router.get("/profile", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Keep level in sync with XP based on progression formula
+    const realLevel = calculateLevel(user.xp || 0);
+    if (user.level !== realLevel) {
+      user.level = realLevel;
+      await user.save();
+    }
+
+    // Count posts created by this user (matched on creatorName)
+    const postCount = await Post.countDocuments({ creatorName: user.name });
+
+    res.status(200).json({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      xp: user.xp || 0,
+      level: user.level || 1,
+      createdAt: user.createdAt,
+      postCount,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // ── GET /api/user/dashboard ───────────────────────────────────────────────────
 // Protected route — any logged-in user (user OR admin) can access this.

@@ -16,8 +16,12 @@ export default function Activity({ onNavigate }) {
     }
   });
 
-  const currentUserName = user?.name || 'Alex Rivers';
-  const currentUserHandle = user?.email ? `@${user.email.split('@')[0]}` : '@alex_rivers';
+  const currentUserName = user?.name || '';
+  const currentUserHandle = user?.name
+    ? `@${user.name.toLowerCase().replace(/\s+/g, '')}`
+    : user?.email
+    ? `@${user.email.split('@')[0]}`
+    : '';
 
   // Filter posts where creator matches current user
   const userPosts = posts.filter(
@@ -122,11 +126,21 @@ export default function Activity({ onNavigate }) {
                 </div>
 
                 {post.imageUrl && (
-                  <img
-                    src={post.imageUrl}
-                    alt={post.caption || 'Post image'}
-                    className="w-full h-40 object-cover rounded border border-[#2a3330]"
-                  />
+                  <div className="rounded overflow-hidden border border-[#2a3330]">
+                    {post.mediaType === 'video' || (typeof post.imageUrl === 'string' && post.imageUrl.match(/\.(mp4|webm|mov)(\?.*)?$/i)) ? (
+                      <video src={post.imageUrl} controls className="w-full h-40 object-cover bg-black" />
+                    ) : post.mediaType === 'audio' || (typeof post.imageUrl === 'string' && post.imageUrl.match(/\.(mp3|wav|ogg)(\?.*)?$/i)) ? (
+                      <div className="p-3 bg-[#0d1210]">
+                        <audio src={post.imageUrl} controls className="w-full" />
+                      </div>
+                    ) : (
+                      <img
+                        src={post.imageUrl}
+                        alt={post.caption || 'Post image'}
+                        className="w-full h-40 object-cover"
+                      />
+                    )}
+                  </div>
                 )}
               </div>
             ))}
